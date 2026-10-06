@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Video Reacciones</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    body { font-family: sans-serif; text-align: center; background: #f4f4f9; padding: 20px; color: #333; }
+    video { width: 100%; max-width: 500px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+    .emoji-bar { display: flex; justify-content: center; gap: 12px; margin-top: 20px; flex-wrap: wrap; }
+    .emoji-btn { font-size: 28px; background: #ffffff; border: 2px solid #e0e0e0; border-radius: 50%; width: 55px; height: 55px; cursor: pointer; transition: transform 0.1s; }
+    .emoji-btn:active { transform: scale(1.2); }
+  </style>
+</head>
+<body>
+
+  <h3>Mira el video y presiona tu reacción:</h3>
+  <video id="myVideo" controls>
+    <source src="https://youtu.be/2DZE_V_qET0?list=PLrBoE-vHSnZ9G_4kRX1I4EZbIQQJ4fT3l" type="video/mp4">
+    Tu navegador no soporta el reproductor.
+  </video>
+
+  <div class="emoji-bar">
+    <button class="emoji-btn" onclick="sendReaction('👍')">👍</button>
+    <button class="emoji-btn" onclick="sendReaction('❤️')">❤️</button>
+    <button class="emoji-btn" onclick="sendReaction('😂')">😂</button>
+    <button class="emoji-btn" onclick="sendReaction('😮')">😮</button>
+    <button class="emoji-btn" onclick="sendReaction('🔥')">🔥</button>
+  </div>
+
+  <script>
+    const tg = window.Telegram.WebApp;
+    tg.expand();
+    
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyhSHsbLkjzS9Xvnu4PtUgW_2pNfrdIGhC9Jdsdd3tjqVMm0zAGBG2CReHTUInI-ZCd4Q/exec";
+    const video = document.getElementById('myVideo');
+    const user = tg.initDataUnsafe?.user?.first_name || "Usuario_Telegram";
+
+    let started = false;
+    video.onplay = () => {
+      if (!started) {
+        started = true;
+        sendData({ user: user, event: "Inicio de reproduccion", timestamp: "00:00" });
+      }
+    };
+
+    function formatTime(seconds) {
+      const mins = Math.floor(seconds / 60);
+      const secs = Math.floor(seconds % 60);
+      return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    }
+
+    function sendReaction(emoji) {
+      const currentTimeFormatted = formatTime(video.currentTime);
+      sendData({
+        user: user,
+        event: "Reaccion Emoji",
+        emoji: emoji,
+        timestamp: currentTimeFormatted
+      });
+    }
+
+    function sendData(data) {
+      fetch(SCRIPT_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+    }
+  </script>
+</body>
+</html>
